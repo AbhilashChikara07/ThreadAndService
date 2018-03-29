@@ -1,5 +1,6 @@
 package com.example.chikara.seviceandthread;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -12,51 +13,53 @@ import javax.net.ssl.HttpsURLConnection;
  * Created by chikara on 3/22/18.
  */
 
-public class ServerCommunication implements Runnable {
+public class ServerCommunication extends AsyncTask<String, String, String> {
     private ConnectionListener mConnectionListener;
     private HttpsURLConnection mUrlConnection;
-    private String mStringUrl;
-    private int CONNECTION_TIME = 60 * 1000;
-    private String mRequestMethod;
-    static java.net.CookieManager msCookieManager = new java.net.CookieManager();
 
 
-    public ServerCommunication(String mStringUrl, String mRequestMethod,
-                               ConnectionListener mConnectionListener) {
-        this.mStringUrl = mStringUrl;
-        this.mRequestMethod = mRequestMethod;
+    ServerCommunication(ConnectionListener mConnectionListener) {
         this.mConnectionListener = mConnectionListener;
+    }
+
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
         mConnectionListener.onPreExecute();
     }
 
     @Override
-    public void run() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    URL mUrl = new URL(mStringUrl);
-                    mUrlConnection = (HttpsURLConnection) mUrl.openConnection();
-                    mUrlConnection.connect();
+    protected String doInBackground(String... strings) {
+        StringBuilder responseOutput = null;
+        try {
+            URL mUrl = new URL(strings[0]);
+            mUrlConnection = (HttpsURLConnection) mUrl.openConnection();
+            mUrlConnection.connect();
 
-                    BufferedReader br = new BufferedReader(
-                            new InputStreamReader(mUrlConnection.getInputStream()));
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(mUrlConnection.getInputStream()));
 
-                    StringBuilder responseOutput = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        responseOutput.append(line);
-                    }
-                    mConnectionListener.onSuccess(responseOutput.toString());
-                    Log.e("responseOutput", "" + responseOutput);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    mConnectionListener.onError(e.getMessage());
-                }
+            responseOutput = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                responseOutput.append(line);
             }
-        }).start();
+            Log.e("responseOutput", "" + responseOutput);
+        } catch (Exception e) {
+            e.printStackTrace();
+            mConnectionListener.onError(e.getMessage());
+        }
+        assert responseOutput != null;
+        return (responseOutput.toString());
     }
 
+
+    @Override
+    protected void onPostExecute(String s) {
+        super.onPostExecute(s);
+        mConnectionListener.onSuccess(s);
+    }
 
     interface ConnectionListener {
 
