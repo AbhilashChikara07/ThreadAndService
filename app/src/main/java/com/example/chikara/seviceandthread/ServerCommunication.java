@@ -45,7 +45,6 @@ public class ServerCommunication extends AsyncTask<String, String, String> {
             while ((line = br.readLine()) != null) {
                 responseOutput.append(line);
             }
-            Log.e("responseOutput", "" + responseOutput);
         } catch (Exception e) {
             e.printStackTrace();
             mConnectionListener.onError(e.getMessage());

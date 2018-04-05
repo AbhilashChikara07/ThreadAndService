@@ -1,7 +1,11 @@
 package com.example.chikara.seviceandthread;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +19,8 @@ public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.Hold
 
     private Context mContext;
     private ArrayList<BookEntity> mList;
+    private Notification.Builder notificationBuilder = null;
+    private NotificationManager notificationManager = null;
 
     BookAdaptorClass(Context mContext, ArrayList<BookEntity> mList) {
         this.mList = mList;
@@ -28,11 +34,26 @@ public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.Hold
                 .inflate(R.layout.inflate_layout, parent, false));
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(HolderClass holder, int position) {
-        BookEntity mEntity = mList.get(position);
-        holder.mTextView.setText("ID " + mEntity.getID() + "\n" + "NEW " + mEntity.getNEW() + "\n" + "EXT " +
+    public void onBindViewHolder(final HolderClass holder, int position) {
+        final BookEntity mEntity = mList.get(position);
+
+        holder.mTextView.setText("ID " + mEntity.getID() + "\n" + "NEW "
+                + mEntity.getNEW() + "\n" + "EXT " +
                 mEntity.getPDF_EXT() + "\n" + "TITLE " + mEntity.getTITLE());
+
+            new DownloadImagesTask(mContext, new DownloadImagesTask.ConnectionCallBackListener() {
+                @Override
+                public void onSuccess(Bitmap bitmap) {
+                    holder.mImageView.setImageBitmap(bitmap);
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mEntity.getTHUMBNAIL().get(0));
     }
 
     @Override
