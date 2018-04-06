@@ -13,6 +13,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -36,7 +37,7 @@ public class DownloadImagesTask extends AsyncTask<String, Integer, Bitmap> {
 
     @Override
     protected Bitmap doInBackground(String... strings) {
-        return downloadImage(strings[0]);
+            return downloadImage(strings[0]);
     }
 
     private Bitmap downloadImage(String url) {
@@ -55,6 +56,7 @@ public class DownloadImagesTask extends AsyncTask<String, Integer, Bitmap> {
             e.printStackTrace();
             mListener.onError();
         }
+        StaticImageCacheClass.cacheMap.put(url, bm);
         return bm;
     }
 
@@ -71,8 +73,8 @@ public class DownloadImagesTask extends AsyncTask<String, Integer, Bitmap> {
 
 
     private void createNotification() {
-//        RemoteViews notificationLayout = new RemoteViews(mContext.getPackageName(),
-//                R.layout.notification_layout);
+        RemoteViews notificationLayout = new RemoteViews(mContext.getPackageName(),
+                R.layout.notification_layout);
 
         notificationBuilder = new Notification.Builder(mContext)
                 .setAutoCancel(true)
@@ -83,7 +85,7 @@ public class DownloadImagesTask extends AsyncTask<String, Integer, Bitmap> {
                 .setWhen(System.currentTimeMillis())
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setPriority(Notification.PRIORITY_HIGH)
-//                .setContent(notificationLayout)
+                .setContent(notificationLayout)
                 .setStyle(new Notification.BigTextStyle().bigText("BIG TEXT"));
 
         if (notificationManager == null)

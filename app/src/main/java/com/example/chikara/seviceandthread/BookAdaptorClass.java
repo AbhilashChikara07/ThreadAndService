@@ -1,12 +1,11 @@
 package com.example.chikara.seviceandthread;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +18,6 @@ public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.Hold
 
     private Context mContext;
     private ArrayList<BookEntity> mList;
-    private Notification.Builder notificationBuilder = null;
-    private NotificationManager notificationManager = null;
 
     BookAdaptorClass(Context mContext, ArrayList<BookEntity> mList) {
         this.mList = mList;
@@ -43,6 +40,10 @@ public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.Hold
                 + mEntity.getNEW() + "\n" + "EXT " +
                 mEntity.getPDF_EXT() + "\n" + "TITLE " + mEntity.getTITLE());
 
+        if (StaticImageCacheClass.cacheMap.get(mEntity.getTHUMBNAIL().get(0)) != null) {
+            holder.mImageView.setImageBitmap(StaticImageCacheClass.
+                    cacheMap.get(mEntity.getTHUMBNAIL().get(0)));
+        } else {
             new DownloadImagesTask(mContext, new DownloadImagesTask.ConnectionCallBackListener() {
                 @Override
                 public void onSuccess(Bitmap bitmap) {
@@ -51,9 +52,10 @@ public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.Hold
 
                 @Override
                 public void onError() {
-
+                    Log.e("onError", "onError");
                 }
             }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mEntity.getTHUMBNAIL().get(0));
+        }
     }
 
     @Override
