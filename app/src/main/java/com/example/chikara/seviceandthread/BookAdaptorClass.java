@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +14,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.HolderClass> {
@@ -47,6 +52,7 @@ public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.Hold
             new DownloadImagesTask(mContext, new DownloadImagesTask.ConnectionCallBackListener() {
                 @Override
                 public void onSuccess(Bitmap bitmap) {
+                    saveFile(bitmap);
                     holder.mImageView.setImageBitmap(bitmap);
                 }
 
@@ -55,6 +61,35 @@ public class BookAdaptorClass extends RecyclerView.Adapter<BookAdaptorClass.Hold
                     Log.e("onError", "onError");
                 }
             }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mEntity.getTHUMBNAIL().get(0));
+        }
+    }
+
+    private void saveFile(Bitmap bitmap) {
+        String folderPath = Environment.getExternalStorageDirectory().toString()
+                + File.separator + "AbhilashChikara";
+        try {
+            File fullPath = new File(folderPath);
+            if (!fullPath.exists()) {
+                fullPath.mkdirs();
+            }
+
+            OutputStream fOut = null;
+            File file = new File(fullPath, String.valueOf(System.currentTimeMillis()) + ".jpg");
+            file.createNewFile();
+            fOut = new FileOutputStream(file);
+
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+
+            /*
+            * Media Store use to save image in gallery.
+            * */
+            MediaStore.Images.Media.insertImage(mContext.getContentResolver(),
+                    file.getAbsolutePath(), file.getName(), file.getName());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
